@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lamumu Crush - Candy Crush Tarzı Oyun</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .background-images {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.2;
+            z-index: -1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+        }
+        
+        .background-images img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: #ffcc00;
+        }
+        
+        .level-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        
+        .language-selector {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn.active {
+            background: #ffcc00;
+            color: #333;
+        }
+        
+        .game-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .candy {
+            aspect-ratio: 1/1;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+            transform-origin: center;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .candy:hover {
+            transform: scale(1.1);
+        }
+        
+        .candy.red { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053840.jpg'); }
+        .candy.blue { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053843.jpg'); }
+        .candy.green { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053844.jpg'); }
+        .candy.yellow { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053845.jpg'); }
+        .candy.purple { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053839.jpg'); }
+        .candy.orange { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/GzHZkdvW4AAd2jo.jpg'); }
+        
+        .selected {
+            border: 3px solid white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+        
+        .exploding {
+            animation: explode 0.5s ease-out forwards;
+        }
+        
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #ff9a3d, #ff6b6b);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .sound-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .sound-btn {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .level-complete {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+        }
+        
+        .level-complete-content {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .level-complete h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+        
+        .level-complete p {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        @media (max-width: 500px) {
+            .game-board {
+                grid-template-columns: repeat(8, 11.5vw);
+                grid-template-rows: repeat(8, 11.5vw);
+            }
+            
+            .candy {
+                font-size: 16px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="background-images">
+            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053839.jpg" alt="Background">
+            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053840.jpg" alt="Background">
+            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053843.jpg" alt="Background">
+            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053844.jpg" alt="Background">
+            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053845.jpg" alt="Background">
+            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/GzHZkdvW4AAd2jo.jpg" alt="Background">
+        </div>
+        
+        <header>
+            <div class="logo">
+                <i class="fas fa-candy-cane"></i>
+                <span id="title">Lamumu Crush</span>
+            </div>
+            <div class="level-info">
+                <span id="level-text">Seviye</span> <span id="current-level">1</span>/10
+            </div>
+            <div class="language-selector">
+                <button class="lang-btn active" id="lang-tr">TR</button>
+                <button class="lang-btn" id="lang-en">EN</button>
+            </div>
+        </header>
+        
+        <div class="game-info">
+            <div class="info-box">
+                <div class="info-label" id="target-label">Hedef</div>
+                <div class="info-value" id="target-score">500</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label" id="score-label">Skor</div>
+                <div class="info-value" id="current-score">0</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label" id="moves-label">Hareket</div>
+                <div class="info-value" id="moves-left">20</div>
+            </div>
+        </div>
+        
+        <div class="game-board" id="game-board"></div>
+        
+        <div class="controls">
+            <button id="new-game-btn">
+                <i class="fas fa-redo"></i>
+                <span id="new-game-text">Yeni Oyun</span>
+            </button>
+            
+            <div class="sound-controls">
+                <button class="sound-btn" id="sound-effects-btn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <button class="sound-btn" id="music-btn">
+                    <i class="fas fa-music"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="instructions" id="instructions">
+        <p id="instruction-text">Aynı renkteki şekerleri yatay veya dikey olarak değiştirerek eşleştir. Üç veya daha fazla şekeri eşleştirerek patlat ve puan kazan!</p>
+    </div>
+    
+    <div class="level-complete" id="level-complete">
+        <div class="level-complete-content">
+            <h2 id="complete-title">Tebrikler!</h2>
+            <p id="complete-text">Seviyeyi tamamladınız!</p>
+            <p id="complete-score">Skorunuz: <span id="final-score">0</span></p>
+            <button id="next-level-btn">
+                <i class="fas fa-arrow-right"></i>
+                <span id="next-level-text">Sonraki Seviye</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Dil desteği için metinler
+        const translations = {
+            tr: {
+                title: "Lamumu Crush",
+                target: "Hedef",
+                score: "Skor",
+                moves: "Hareket",
+                newGame: "Yeni Oyun",
+                instructions: "Aynı renkteki şekerleri yatay veya dikey olarak değiştirerek eşleştir. Üç veya daha fazla şekeri eşleştirerek patlat ve puan kazan!",
+                win: "Tebrikler! Kazandınız! Skorunuz: ",
+                lose: "Oyun Bitti! Skorunuz: ",
+                matches: " eşleşme! +",
+                level: "Seviye",
+                completeTitle: "Tebrikler!",
+                completeText: "Seviyeyi tamamladınız!",
+                nextLevel: "Sonraki Seviye"
+            },
+            en: {
+                title: "Lamumu Crush",
+                target: "Target",
+                score: "Score",
+                moves: "Moves",
+                newGame: "New Game",
+                instructions: "Match candies of the same color by swapping them horizontally or vertically. Match three or more candies to blast them and earn points!",
+                win: "Congratulations! You won! Your score: ",
+                lose: "Game Over! Your score: ",
+                matches: " matches! +",
+                level: "Level",
+                completeTitle: "Congratulations!",
+                completeText: "You completed the level!",
+                nextLevel: "Next Level"
+            }
+        };
+
+        // Seviye yapılandırması
+        const levels = [
+            { targetScore: 500, moves: 20 },
+            { targetScore: 1000, moves: 25 },
+            { targetScore: 1500, moves: 25 },
+            { targetScore: 2000, moves: 30 },
+            { targetScore: 2500, moves: 30 },
+            { targetScore: 3000, moves: 35 },
+            { targetScore: 3500, moves: 35 },
+            { targetScore: 4000, moves: 40 },
+            { targetScore: 4500, moves: 40 },
+            { targetScore: 5000, moves: 45 }
+        ];
+
+        let currentLanguage = 'tr';
+        let currentLevel = 1;
+        let soundEffectsEnabled = true;
+        let musicEnabled = true;
+        
+        // Ses dosyaları için değişkenler
+        let popSound, backgroundMusic, levelCompleteSound;
+        
+        // Ses dosyalarını yükle
+        function loadAudio() {
+            // Bu kısımda kendi ses dosyalarınızın URL'lerini kullanabilirsiniz
+            // Örnek: 
+            // popSound = new Audio('patlama-sesi.mp3');
+            // backgroundMusic = new Audio('arkaplan-muzigi.mp3');
+            // levelCompleteSound = new Audio('seviye-tamamlama-sesi.mp3');
+            
+            // Şimdilik boş ses nesneleri oluşturalım
+            popSound = new Audio();
+            backgroundMusic = new Audio();
+            levelCompleteSound = new Audio();
+            
+            // Sesleri ayarla
+            popSound.volume = 0.7;
+            backgroundMusic.volume = 0.5;
+            backgroundMusic.loop = true;
+            levelCompleteSound.volume = 0.7;
+        }
+        
+        // Basit ses simülasyonu
+        function playPopSound() {
+            if (!soundEffectsEnabled) return;
+            
+            try {
+                popSound.currentTime = 0;
+                // Ses dosyası yüklü değilse, ses özelliğini kullan
+                if (popSound.src) {
+                    popSound.play();
+                } else {
+                    // Tarayıcıda ses oluştur (sınırlı destek)
+                    const context = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = context.createOscillator();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(800, context.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(300, context.currentTime + 0.3);
+                    
+                    const gainNode = context.createGain();
+                    gainNode.gain.setValueAtTime(0.7, context.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(context.destination);
+                    
+                    oscillator.start();
+                    oscillator.stop(context.currentTime + 0.3);
+                }
+            } catch (e) {
+                console.log("Ses çalınamadı: ", e);
+            }
+        }
+        
+        function playBackgroundMusic() {
+            if (!musicEnabled) return;
+            
+            try {
+                backgroundMusic.currentTime = 0;
+                if (backgroundMusic.src) {
+                    backgroundMusic.play();
+                }
+            } catch (e) {
+                console.log("Müzik çalınamadı: ", e);
+            }
+        }
+        
+        function stopBackgroundMusic() {
+            try {
+                backgroundMusic.pause();
+            } catch (e) {
+                console.log("Müzik durdurulamadı: ", e);
+            }
+        }
+        
+        function playLevelCompleteSound() {
+            if (!soundEffectsEnabled) return;
+            
+            try {
+                levelCompleteSound.currentTime = 0;
+                if (levelCompleteSound.src) {
+                    levelCompleteSound.play();
+                } else {
+                    // Tarayıcıda ses oluştur (sınırlı destek)
+                    const context = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = context.createOscillator();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523.25, context.currentTime); // Do
+                    oscillator.frequency.setValueAtTime(659.25, context.currentTime + 0.1); // Mi
+                    oscillator.frequency.setValueAtTime(783.99, context.currentTime + 0.2); // Sol
+                    
+                    const gainNode = context.createGain();
+                    gainNode.gain.setValueAtTime(0.7, context.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(context.destination);
+                    
+                    oscillator.start();
+                    oscillator.stop(context.currentTime + 0.5);
+                }
+            } catch (e) {
+                console.log("Ses çalınamadı: ", e);
+            }
+        }
+        
+        // Dil değiştirme işlevi
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Butonları güncelle
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+            
+            // Metinleri güncelle
+            document.getElementById('title').textContent = translations[lang].title;
+            document.getElementById('target-label').textContent = translations[lang].target;
+            document.getElementById('score-label').textContent = translations[lang].score;
+            document.getElementById('moves-label').textContent = translations[lang].moves;
+            document.getElementById('new-game-text').textContent = translations[lang].newGame;
+            document.getElementById('instruction-text').textContent = translations[lang].instructions;
+            document.getElementById('level-text').textContent = translations[lang].level;
+            document.getElementById('complete-title').textContent = translations[lang].completeTitle;
+            document.getElementById('complete-text').textContent = translations[lang].completeText;
+            document.getElementById('next-level-text').textContent = translations[lang].nextLevel;
+        }
+        
+        // Dil butonlarına tıklama olayları
+        document.getElementById('lang-tr').addEventListener('click', () => setLanguage('tr'));
+        document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
+        
+        // Ses kontrol butonları
+        document.getElementById('sound-effects-btn').addEventListener('click', function() {
+            soundEffectsEnabled = !soundEffectsEnabled;
+            this.innerHTML = soundEffectsEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+        });
+        
+        document.getElementById('music-btn').addEventListener('click', function() {
+            musicEnabled = !musicEnabled;
+            this.innerHTML = musicEnabled ? '<i class="fas fa-music"></i>' : '<i class="fas fa-music" style="opacity:0.5"></i>';
+            
+            if (musicEnabled) {
+                playBackgroundMusic();
+            } else {
+                stopBackgroundMusic();
+            }
+        });
+        
+        // Oyun değişkenleri
+        const gameBoard = document.getElementById('game-board');
+        const currentScoreElement = document.getElementById('current-score');
+        const movesLeftElement = document.getElementById('moves-left');
+        const targetScoreElement = document.getElementById('target-score');
+        const currentLevelElement = document.getElementById('current-level');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const levelCompleteScreen = document.getElementById('level-complete');
+        const finalScoreElement = document.getElementById('final-score');
+        
+        let selectedCandy = null;
+        let currentScore = 0;
+        let movesLeft = 20;
+        let targetScore = 500;
+        let board = [];
+        
+        const candyTypes = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+        
+        // Oyun tahtasını oluştur
+        function initializeBoard() {
+            gameBoard.innerHTML = '';
+            board = [];
+            
+            for (let row = 0; row < 8; row++) {
+                board[row] = [];
+                for (let col = 0; col < 8; col++) {
+                    const randomType = candyTypes[Math.floor(Math.random() * candyTypes.length)];
+                    board[row][col] = randomType;
+                    
+                    const candy = document.createElement('div');
+                    candy.className = `candy ${randomType}`;
+                    candy.dataset.row = row;
+                    candy.dataset.col = col;
+                    
+                    candy.addEventListener('click', () => handleCandyClick(candy));
+                    
+                    gameBoard.appendChild(candy);
+                }
+            }
+            
+            // Seviye bilgilerini güncelle
+            targetScore = levels[currentLevel - 1].targetScore;
+            movesLeft = levels[currentLevel - 1].moves;
+            currentScore = 0;
+            
+            updateUI();
+            
+            // Müziği çal
+            playBackgroundMusic();
+        }
+        
+        // Şeker tıklama işlemi
+        function handleCandyClick(candy) {
+            if (movesLeft <= 0) return;
+            
+            const row = parseInt(candy.dataset.row);
+            const col = parseInt(candy.dataset.col);
+            
+            if (!selectedCandy) {
+                // İlk şekeri seç
+                selectedCandy = candy;
+                candy.classList.add('selected');
+            } else {
+                // İkinci şekeri seç
+                const selectedRow = parseInt(selectedCandy.dataset.row);
+                const selectedCol = parseInt(selectedCandy.dataset.col);
+                
+                // Sadece yanındaki şekerlerle değiş tokuş yapılabilir
+                if ((Math.abs(row - selectedRow) === 1 && col === selectedCol) || 
+                    (Math.abs(col - selectedCol) === 1 && row === selectedRow)) {
+                    
+                    // Şekerleri değiştir
+                    swapCandies(selectedRow, selectedCol, row, col);
+                    
+                    // Eşleşme kontrol et
+                    if (!checkMatches()) {
+                        // Eşleşme yoksa geri değiştir
+                        swapCandies(selectedRow, selectedCol, row, col);
+                    } else {
+                        // Hareket sayısını azalt
+                        movesLeft--;
+                        updateUI();
+                        
+                        // Kazanma/kaybetme kontrolü
+                        checkGameStatus();
+                    }
+                }
+                
+                // Seçimi temizle
+                selectedCandy.classList.remove('selected');
+                selectedCandy = null;
+            }
+        }
+        
+        // İki şekeri değiştir
+        function swapCandies(row1, col1, row2, col2) {
+            // Board'da değiştir
+            const temp = board[row1][col1];
+            board[row1][col1] = board[row2][col2];
+            board[row2][col2] = temp;
+            
+            // UI'da değiştir
+            updateBoardUI();
+        }
+        
+        // Eşleşmeleri kontrol et
+        function checkMatches() {
+            let hasMatches = false;
+            let matches = [];
+            
+            // Yatay eşleşmeleri kontrol et
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 6; col++) {
+                    if (board[row][col] && 
+                        board[row][col] === board[row][col+1] && 
+                        board[row][col] === board[row][col+2]) {
+                        
+                        // Eşleşme bulundu
+                        hasMatches = true;
+                        
+                        // Eşleşen şekerleri işaretle
+                        matches.push([row, col], [row, col+1], [row, col+2]);
+                        
+                        // 3'ten fazla eşleşme var mı kontrol et
+                        if (col+3 < 8 && board[row][col] === board[row][col+3]) {
+                            matches.push([row, col+3]);
+                            if (col+4 < 8 && board[row][col] === board[row][col+4]) {
+                                matches.push([row, col+4]);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Dikey eşleşmeleri kontrol et
+            for (let col = 0; col < 8; col++) {
+                for (let row = 0; row < 6; row++) {
+                    if (board[row][col] && 
+                        board[row][col] === board[row+1][col] && 
+                        board[row][col] === board[row+2][col]) {
+                        
+                        // Eşleşme bulundu
+                        hasMatches = true;
+                        
+                        // Eşleşen şekerleri işaretle
+                        matches.push([row, col], [row+1, col], [row+2, col]);
+                        
+                        // 3'ten fazla eşleşme var mı kontrol et
+                        if (row+3 < 8 && board[row][col] === board[row+3][col]) {
+                            matches.push([row+3, col]);
+                            if (row+4 < 8 && board[row][col] === board[row+4][col]) {
+                                matches.push([row+4, col]);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Eşleşmeleri işle
+            if (hasMatches) {
+                // Benzersiz eşleşmeleri bul
+                const uniqueMatches = Array.from(new Set(matches.map(JSON.stringify)), JSON.parse);
+                
+                // Puan ekle
+                const points = uniqueMatches.length * 30;
+                currentScore += points;
+                
+                // Eşleşen şekerleri patlat
+                explodeCandies(uniqueMatches);
+                
+                // Boşlukları doldur
+                setTimeout(fillEmptySpaces, 500);
+                
+                // Puan bilgisini göster
+                showPointsInfo(uniqueMatches.length, points);
+            }
+            
+            return hasMatches;
+        }
+        
+        // Şekerleri patlatma animasyonu
+        function explodeCandies(matches) {
+            matches.forEach(([row, col]) => {
+                const candyElement = document.querySelector(`.candy[data-row="${row}"][data-col="${col}"]`);
+                if (candyElement) {
+                    candyElement.classList.add('exploding');
+                    playPopSound(); // Patlama sesi
+                    // Animasyon bitince elementi kaldır
+                    setTimeout(() => {
+                        candyElement.remove();
+                    }, 500);
+                }
+                board[row][col] = null;
+            });
+        }
+        
+        // Boşlukları doldur
+        function fillEmptySpaces() {
+            for (let col = 0; col < 8; col++) {
+                for (let row = 7; row >= 0; row--) {
+                    if (board[row][col] === null) {
+                        // Yukarıdaki şekerleri aşağı kaydır
+                        for (let aboveRow = row-1; aboveRow >= 0; aboveRow--) {
+                            if (board[aboveRow][col] !== null) {
+                                board[row][col] = board[aboveRow][col];
+                                board[aboveRow][col] = null;
+                                break;
+                            }
+                        }
+                        
+                        // Yukarıda şeker yoksa, yeni şeker oluştur
+                        if (board[row][col] === null) {
+                            board[row][col] = candyTypes[Math.floor(Math.random() * candyTypes.length)];
+                        }
+                    }
+                }
+            }
+            
+            // UI'ı güncelle
+            updateBoardUI();
+            
+            // Tekrar eşleşme kontrol et (zincir reaksiyonları için)
+            setTimeout(() => {
+                if (checkMatches()) {
+                    // Zincir reaksiyonu devam ediyor
+                }
+            }, 300);
+        }
+        
+        // Oyun tahtasını güncelle
+        function updateBoardUI() {
+            // Önce mevcut tüm şekerleri temizle
+            const existingCandies = document.querySelectorAll('.candy:not(.exploding)');
+            existingCandies.forEach(candy => candy.remove());
+            
+            // Yeni şekerleri oluştur
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if (board[row][col]) {
+                        const candy = document.createElement('div');
+                        candy.className = `candy ${board[row][col]}`;
+                        candy.dataset.row = row;
+                        candy.dataset.col = col;
+                        
+                        candy.addEventListener('click', () => handleCandyClick(candy));
+                        
+                        gameBoard.appendChild(candy);
+                    }
+                }
+            }
+        }
+        
+        // Puan bilgisi göster
+        function showPointsInfo(matchCount, points) {
+            const pointsInfo = document.createElement('div');
+            pointsInfo.textContent = `${matchCount}${translations[currentLanguage].matches}${points}`;
+            pointsInfo.style.position = 'absolute';
+            pointsInfo.style.color = '#ffcc00';
+            pointsInfo.style.fontWeight = 'bold';
+            pointsInfo.style.fontSize = '20px';
+            pointsInfo.style.pointerEvents = 'none';
+            pointsInfo.style.animation = 'fadeUp 1s forwards';
+            
+            document.body.appendChild(pointsInfo);
+            
+            // Rastgele konum
+            const x = Math.random() * (window.innerWidth - 100);
+            pointsInfo.style.left = `${x}px`;
+            pointsInfo.style.top = '50%';
+            
+            // Animasyon bitince elementi kaldır
+            setTimeout(() => {
+                pointsInfo.remove();
+            }, 1000);
+        }
+        
+        // UI'ı güncelle
+        function updateUI() {
+            currentScoreElement.textContent = currentScore;
+            movesLeftElement.textContent = movesLeft;
+            targetScoreElement.textContent = targetScore;
+            currentLevelElement.textContent = currentLevel;
+        }
+        
+        // Oyun durumunu kontrol et
+        function checkGameStatus() {
+            if (currentScore >= targetScore) {
+                playLevelCompleteSound();
+                stopBackgroundMusic();
+                finalScoreElement.textContent = currentScore;
+                setTimeout(() => {
+                    levelCompleteScreen.style.display = 'flex';
+                }, 1000);
+            } else if (movesLeft <= 0) {
+                stopBackgroundMusic();
+                setTimeout(() => {
+                    alert(translations[currentLanguage].lose + currentScore);
+                    initializeBoard();
+                }, 500);
+            }
+        }
+        
+        // Yeni oyun butonu
+        newGameBtn.addEventListener('click', initializeBoard);
+        
+        // Sonraki seviye butonu
+        nextLevelBtn.addEventListener('click', function() {
+            if (currentLevel < 10) {
+                currentLevel++;
+                levelCompleteScreen.style.display = 'none';
+                initializeBoard();
+            } else {
+                alert("Tebrikler! Tüm seviyeleri tamamladınız!");
+                currentLevel = 1;
+                levelCompleteScreen.style.display = 'none';
+                initializeBoard();
+            }
+        });
+        
+        // Oyunu başlat
+        loadAudio();
+        initializeBoard();
+        
+        // Puan animasyonu için stil ekle
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeUp {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(-100px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
