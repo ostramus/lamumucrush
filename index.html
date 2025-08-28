@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lamumu Crush - Candy Crush Tarzı Oyun</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Lamumu Crush - Eğlenceli Şeker Oyunu</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         
         body {
@@ -51,10 +52,11 @@
             grid-template-rows: repeat(3, 1fr);
         }
         
-        .background-images img {
+        .background-images div {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            background-size: cover;
+            background-position: center;
         }
         
         header {
@@ -71,11 +73,13 @@
             font-weight: bold;
             display: flex;
             align-items: center;
+            gap: 10px;
         }
         
-        .logo i {
-            margin-right: 10px;
-            color: #ffcc00;
+        .logo-img {
+            height: 40px;
+            width: auto;
+            border-radius: 8px;
         }
         
         .level-info {
@@ -160,13 +164,6 @@
             transform: scale(1.1);
         }
         
-        .candy.red { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053840.jpg'); }
-        .candy.blue { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053843.jpg'); }
-        .candy.green { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053844.jpg'); }
-        .candy.yellow { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053845.jpg'); }
-        .candy.purple { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053839.jpg'); }
-        .candy.orange { background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/GzHZkdvW4AAd2jo.jpg'); }
-        
         .selected {
             border: 3px solid white;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
@@ -174,6 +171,10 @@
         
         .exploding {
             animation: explode 0.5s ease-out forwards;
+        }
+        
+        .level-transition {
+            animation: levelTransition 1s ease-out forwards;
         }
         
         @keyframes explode {
@@ -191,9 +192,33 @@
             }
         }
         
+        @keyframes levelTransition {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            25% {
+                transform: scale(1.2) rotate(5deg);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.5) rotate(-5deg);
+                opacity: 0.6;
+            }
+            75% {
+                transform: scale(1.8) rotate(3deg);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
         .controls {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             gap: 15px;
             margin-bottom: 15px;
         }
@@ -225,17 +250,35 @@
         .sound-controls {
             display: flex;
             gap: 10px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            border-radius: 20px;
         }
         
         .sound-btn {
             padding: 10px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        
+        .sound-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .sound-label {
+            font-size: 14px;
+            margin-right: 5px;
+            font-weight: bold;
         }
         
         .instructions {
@@ -296,27 +339,83 @@
                 flex-direction: column;
                 align-items: center;
             }
+            
+            .sound-controls {
+                margin-top: 10px;
+            }
+            
+            .logo {
+                font-size: 20px;
+            }
+            
+            .logo-img {
+                height: 32px;
+            }
+        }
+        
+        .protection-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .protection-notice h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+        
+        .protection-notice p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+        
+        .protection-notice button {
+            font-size: 18px;
+            padding: 15px 30px;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div class="protection-notice" id="protection-notice">
+        <h2 id="protection-title">İçerik Koruması</h2>
+        <p id="protection-text">⚠️</p>
+        <button onclick="document.getElementById('protection-notice').style.display='none'">
+            <i class="fas fa-play"></i> <span id="protection-button">Oyuna Devam Et</span>
+        </button>
+    </div>
+
     <div class="container">
         <div class="background-images">
-            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053839.jpg" alt="Background">
-            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053840.jpg" alt="Background">
-            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053843.jpg" alt="Background">
-            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053844.jpg" alt="Background">
-            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053845.jpg" alt="Background">
-            <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/GzHZkdvW4AAd2jo.jpg" alt="Background">
+            <div style="background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053839.jpg')"></div>
+            <div style="background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053840.jpg')"></div>
+            <div style="background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053843.jpg')"></div>
+            <div style="background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053844.jpg')"></div>
+            <div style="background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053845.jpg')"></div>
+            <div style="background-image: url('https://raw.githubusercontent.com/ostramus/lamumucrush/main/GzHZkdvW4AAd2jo.jpg')"></div>
         </div>
         
         <header>
             <div class="logo">
-                <i class="fas fa-candy-cane"></i>
+                <img src="https://raw.githubusercontent.com/ostramus/lamumucrush/main/logo.jpg" alt="Lamumu Crush Logo" class="logo-img">
                 <span id="title">Lamumu Crush</span>
             </div>
             <div class="level-info">
-                <span id="level-text">Seviye</span> <span id="current-level">1</span>/10
+                <span id="level-text">Seviye</span> <span id="current-level">1</span>/15
             </div>
             <div class="language-selector">
                 <button class="lang-btn active" id="lang-tr">TR</button>
@@ -348,18 +447,19 @@
             </button>
             
             <div class="sound-controls">
-                <button class="sound-btn" id="sound-effects-btn">
+                <span class="sound-label">Ses:</span>
+                <div class="sound-btn" id="sound-effects-btn" title="Ses Efektleri">
                     <i class="fas fa-volume-up"></i>
-                </button>
-                <button class="sound-btn" id="music-btn">
+                </div>
+                <div class="sound-btn" id="music-btn" title="Müzik">
                     <i class="fas fa-music"></i>
-                </button>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="instructions" id="instructions">
-        <p id="instruction-text">Aynı renkteki şekerleri yatay veya dikey olarak değiştirerek eşleştir. Üç veya daha fazla şekeri eşleştirerek patlat ve puan kazan!</p>
+        <p id="instruction-text">Aynı lamumu görselleri yatay veya dikey olarak değiştirerek eşleştir. Üç veya daha fazlalamumu eşleştirerek patlat ve puan kazan!</p>
     </div>
     
     <div class="level-complete" id="level-complete">
@@ -383,14 +483,17 @@
                 score: "Skor",
                 moves: "Hareket",
                 newGame: "Yeni Oyun",
-                instructions: "Aynı renkteki şekerleri yatay veya dikey olarak değiştirerek eşleştir. Üç veya daha fazla şekeri eşleştirerek patlat ve puan kazan!",
+                instructions: "Aynı lamumu görselleri yatay veya dikey olarak değiştirerek eşleştir. Üç veya daha fazlalamumu eşleştirerek patlat ve puan kazan!",
                 win: "Tebrikler! Kazandınız! Skorunuz: ",
                 lose: "Oyun Bitti! Skorunuz: ",
                 matches: " eşleşme! +",
                 level: "Seviye",
                 completeTitle: "Tebrikler!",
                 completeText: "Seviyeyi tamamladınız!",
-                nextLevel: "Sonraki Seviye"
+                nextLevel: "Sonraki Seviye",
+                protectionTitle: "İçerik Koruması",
+                protectionText: "⚠️.",
+                protectionButton: "Oyuna Devam Et"
             },
             en: {
                 title: "Lamumu Crush",
@@ -398,29 +501,37 @@
                 score: "Score",
                 moves: "Moves",
                 newGame: "New Game",
-                instructions: "Match candies of the same color by swapping them horizontally or vertically. Match three or more candies to blast them and earn points!",
+                instructions: "Swap the same lamumu images horizontally or vertically to match them. Match three or more lamumus to blast them and earn points!",
                 win: "Congratulations! You won! Your score: ",
                 lose: "Game Over! Your score: ",
                 matches: " matches! +",
                 level: "Level",
                 completeTitle: "Congratulations!",
                 completeText: "You completed the level!",
-                nextLevel: "Next Level"
+                nextLevel: "Next Level",
+                protectionTitle: "Content Protection",
+                protectionText: "⚠️",
+                protectionButton: "Continue Game"
             }
         };
 
-        // Seviye yapılandırması
+        // 15 seviyelik yapılandırma
         const levels = [
-            { targetScore: 500, moves: 20 },
-            { targetScore: 1000, moves: 25 },
-            { targetScore: 1500, moves: 25 },
+            { targetScore: 750, moves: 20 },
+            { targetScore: 900, moves: 22 },
+            { targetScore: 1200, moves: 24 },
+            { targetScore: 1400, moves: 26 },
+            { targetScore: 1700, moves: 28 },
             { targetScore: 2000, moves: 30 },
-            { targetScore: 2500, moves: 30 },
-            { targetScore: 3000, moves: 35 },
-            { targetScore: 3500, moves: 35 },
-            { targetScore: 4000, moves: 40 },
-            { targetScore: 4500, moves: 40 },
-            { targetScore: 5000, moves: 45 }
+            { targetScore: 2400, moves: 32 },
+            { targetScore: 2700, moves: 34 },
+            { targetScore: 3100, moves: 36 },
+            { targetScore: 3500, moves: 38 },
+            { targetScore: 3800, moves: 40 },
+            { targetScore: 4100, moves: 42 },
+            { targetScore: 4400, moves: 44 },
+            { targetScore: 4800, moves: 46 },
+            { targetScore: 5100, moves: 48 }
         ];
 
         let currentLanguage = 'tr';
@@ -433,15 +544,11 @@
         
         // Ses dosyalarını yükle
         function loadAudio() {
-            // Bu kısımda kendi ses dosyalarınızın URL'lerini kullanabilirsiniz
-            // Örnek: 
-            // popSound = new Audio('patlama-sesi.mp3');
-            // backgroundMusic = new Audio('arkaplan-muzigi.mp3');
-            // levelCompleteSound = new Audio('seviye-tamamlama-sesi.mp3');
+            // Arkaplan müziği
+            backgroundMusic = new Audio('https://github.com/ostramus/lamumucrush/blob/main/lamumucrushbg.mp3?raw=true');
             
-            // Şimdilik boş ses nesneleri oluşturalım
+            // Diğer sesler
             popSound = new Audio();
-            backgroundMusic = new Audio();
             levelCompleteSound = new Audio();
             
             // Sesleri ayarla
@@ -457,11 +564,10 @@
             
             try {
                 popSound.currentTime = 0;
-                // Ses dosyası yüklü değilse, ses özelliğini kullan
                 if (popSound.src) {
                     popSound.play();
                 } else {
-                    // Tarayıcıda ses oluştur (sınırlı destek)
+                    // Tarayıcıda ses oluştur
                     const context = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = context.createOscillator();
                     oscillator.type = 'sine';
@@ -489,7 +595,9 @@
             try {
                 backgroundMusic.currentTime = 0;
                 if (backgroundMusic.src) {
-                    backgroundMusic.play();
+                    backgroundMusic.play().catch(e => {
+                        console.log("Müzik çalınamadı: ", e);
+                    });
                 }
             } catch (e) {
                 console.log("Müzik çalınamadı: ", e);
@@ -512,13 +620,13 @@
                 if (levelCompleteSound.src) {
                     levelCompleteSound.play();
                 } else {
-                    // Tarayıcıda ses oluştur (sınırlı destek)
+                    // Tarayıcıda ses oluştur
                     const context = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = context.createOscillator();
                     oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(523.25, context.currentTime); // Do
-                    oscillator.frequency.setValueAtTime(659.25, context.currentTime + 0.1); // Mi
-                    oscillator.frequency.setValueAtTime(783.99, context.currentTime + 0.2); // Sol
+                    oscillator.frequency.setValueAtTime(523.25, context.currentTime);
+                    oscillator.frequency.setValueAtTime(659.25, context.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(783.99, context.currentTime + 0.2);
                     
                     const gainNode = context.createGain();
                     gainNode.gain.setValueAtTime(0.7, context.currentTime);
@@ -554,7 +662,34 @@
             document.getElementById('complete-title').textContent = translations[lang].completeTitle;
             document.getElementById('complete-text').textContent = translations[lang].completeText;
             document.getElementById('next-level-text').textContent = translations[lang].nextLevel;
+            document.getElementById('protection-title').textContent = translations[lang].protectionTitle;
+            document.getElementById('protection-text').textContent = translations[lang].protectionText;
+            document.getElementById('protection-button').textContent = translations[lang].protectionButton;
         }
+        
+        // Sayfa kaynağını koruma
+        document.addEventListener('keydown', function(e) {
+            // F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J engelleme
+            if (
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c' || e.key === 'J' || e.key === 'j')) || 
+                (e.ctrlKey && (e.key === 'U' || e.key === 'u'))
+            ) {
+                e.preventDefault();
+                document.getElementById('protection-notice').style.display = 'flex';
+            }
+        });
+        
+        // Sağ tıklama menüsünü engelleme
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            document.getElementById('protection-notice').style.display = 'flex';
+        });
+        
+        // Sayfa içeriğini seçmeyi engelleme
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
         
         // Dil butonlarına tıklama olayları
         document.getElementById('lang-tr').addEventListener('click', () => setLanguage('tr'));
@@ -595,6 +730,28 @@
         let board = [];
         
         const candyTypes = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+        const candyImages = {
+            'red': 'https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053840.jpg',
+            'blue': 'https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053843.jpg',
+            'green': 'https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053844.jpg',
+            'yellow': 'https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053845.jpg',
+            'purple': 'https://raw.githubusercontent.com/ostramus/lamumucrush/main/5845797223022053839.jpg',
+            'orange': 'https://raw.githubusercontent.com/ostramus/lamumucrush/main/GzHZkdvW4AAd2jo.jpg'
+        };
+        
+        // Seviye geçiş animasyonu
+        function playLevelTransitionAnimation() {
+            const candies = document.querySelectorAll('.candy');
+            candies.forEach((candy, index) => {
+                setTimeout(() => {
+                    candy.classList.add('level-transition');
+                }, index * 50);
+            });
+            
+            return new Promise(resolve => {
+                setTimeout(resolve, 1000);
+            });
+        }
         
         // Oyun tahtasını oluştur
         function initializeBoard() {
@@ -608,7 +765,8 @@
                     board[row][col] = randomType;
                     
                     const candy = document.createElement('div');
-                    candy.className = `candy ${randomType}`;
+                    candy.className = `candy`;
+                    candy.style.backgroundImage = `url('${candyImages[randomType]}')`;
                     candy.dataset.row = row;
                     candy.dataset.col = col;
                     
@@ -818,7 +976,8 @@
                 for (let col = 0; col < 8; col++) {
                     if (board[row][col]) {
                         const candy = document.createElement('div');
-                        candy.className = `candy ${board[row][col]}`;
+                        candy.className = `candy`;
+                        candy.style.backgroundImage = `url('${candyImages[board[row][col]]}')`;
                         candy.dataset.row = row;
                         candy.dataset.col = col;
                         
@@ -884,15 +1043,18 @@
         newGameBtn.addEventListener('click', initializeBoard);
         
         // Sonraki seviye butonu
-        nextLevelBtn.addEventListener('click', function() {
-            if (currentLevel < 10) {
+        nextLevelBtn.addEventListener('click', async function() {
+            levelCompleteScreen.style.display = 'none';
+            
+            // Seviye geçiş animasyonunu oynat
+            await playLevelTransitionAnimation();
+            
+            if (currentLevel < 15) {
                 currentLevel++;
-                levelCompleteScreen.style.display = 'none';
                 initializeBoard();
             } else {
                 alert("Tebrikler! Tüm seviyeleri tamamladınız!");
                 currentLevel = 1;
-                levelCompleteScreen.style.display = 'none';
                 initializeBoard();
             }
         });
